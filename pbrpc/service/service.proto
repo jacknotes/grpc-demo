@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package pbrbc;
+option go_package="github.com/jacknotes/grpc-demo/pbrpc/service";
+
+message Request {
+    string value = 1;
+}
+
+message Response {
+    string value = 1;
+}

@@ -12,7 +12,7 @@ import (
 
 // var _ Service = &HelloService{}
 // 我们声明了一个空指针，强制把这个指针转换成了一个*HelloService类型
-// var _ service.Service = (*HelloService)(nil)
+var _ service.Service = (*HelloService)(nil)
 
 type HelloService struct{}
 

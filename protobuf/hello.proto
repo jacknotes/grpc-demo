@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package hello;
+option go_package="github.com/jacknotes/grpc-demo/protobuf";    // go mod名称加protobuf路径，生成到这里面来
+
+message String {
+    string value = 1;
+}

@@ -10,7 +10,7 @@ import (
 )
 
 // 我们声明了一个空指针，强制把这个指针转换成了一个*HelloServiceClient类型
-// var _ service.Service = (*HelloServiceClient)(nil)
+var _ service.Service = (*HelloServiceClient)(nil)
 
 type HelloServiceClient struct {
 	client *rpc.Client
