@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"net"
 
 	"github.com/jacknotes/grpc-demo/grpc/protocol"
@@ -22,6 +23,30 @@ func (s *Service) Hello(ctx context.Context, req *protocol.Request) (*protocol.R
 	}, nil
 }
 
+// server --> stream --> client
+// 重写，HelloService_ChatServer 对应 HelloService_ChatClient
+func (s *Service) Chat(stream protocol.HelloService_ChatServer) error {
+	// 可以把stream当成一个channel io pipe对象
+	for {
+		// 接收客户端请求
+		req, err := stream.Recv()
+		if err != nil {
+			if err == io.EOF {
+				fmt.Println("chat exit")
+				return nil
+			}
+			fmt.Println(err)
+			return err
+		}
+		// 处理请求
+		err = stream.Send(&protocol.Response{Value: "hello: " + req.Value})
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+	}
+}
+
 func main() {
 	// 如何把Service 作为一个rpc暴露出去，提供服务
 	server := grpc.NewServer()
@@ -38,5 +63,4 @@ func main() {
 	if err := server.Serve(ls); err != nil {
 		fmt.Println(err)
 	}
-
 }

@@ -22,6 +22,8 @@ type HelloServiceClient interface {
 	// Request rpc函数的参数
 	// Response rpc函数的返回参数
 	Hello(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
+	// stream rpc， 双向流
+	Chat(ctx context.Context, opts ...grpc.CallOption) (HelloService_ChatClient, error)
 }
 
 type helloServiceClient struct {
@@ -41,6 +43,37 @@ func (c *helloServiceClient) Hello(ctx context.Context, in *Request, opts ...grp
 	return out, nil
 }
 
+func (c *helloServiceClient) Chat(ctx context.Context, opts ...grpc.CallOption) (HelloService_ChatClient, error) {
+	stream, err := c.cc.NewStream(ctx, &HelloService_ServiceDesc.Streams[0], "/grpc.demo.protocol.HelloService/Chat", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &helloServiceChatClient{stream}
+	return x, nil
+}
+
+type HelloService_ChatClient interface {
+	Send(*Request) error
+	Recv() (*Response, error)
+	grpc.ClientStream
+}
+
+type helloServiceChatClient struct {
+	grpc.ClientStream
+}
+
+func (x *helloServiceChatClient) Send(m *Request) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *helloServiceChatClient) Recv() (*Response, error) {
+	m := new(Response)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // HelloServiceServer is the server API for HelloService service.
 // All implementations must embed UnimplementedHelloServiceServer
 // for forward compatibility
@@ -49,6 +82,8 @@ type HelloServiceServer interface {
 	// Request rpc函数的参数
 	// Response rpc函数的返回参数
 	Hello(context.Context, *Request) (*Response, error)
+	// stream rpc， 双向流
+	Chat(HelloService_ChatServer) error
 	mustEmbedUnimplementedHelloServiceServer()
 }
 
@@ -58,6 +93,9 @@ type UnimplementedHelloServiceServer struct {
 
 func (UnimplementedHelloServiceServer) Hello(context.Context, *Request) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Hello not implemented")
+}
+func (UnimplementedHelloServiceServer) Chat(HelloService_ChatServer) error {
+	return status.Errorf(codes.Unimplemented, "method Chat not implemented")
 }
 func (UnimplementedHelloServiceServer) mustEmbedUnimplementedHelloServiceServer() {}
 
@@ -90,6 +128,32 @@ func _HelloService_Hello_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HelloService_Chat_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(HelloServiceServer).Chat(&helloServiceChatServer{stream})
+}
+
+type HelloService_ChatServer interface {
+	Send(*Response) error
+	Recv() (*Request, error)
+	grpc.ServerStream
+}
+
+type helloServiceChatServer struct {
+	grpc.ServerStream
+}
+
+func (x *helloServiceChatServer) Send(m *Response) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *helloServiceChatServer) Recv() (*Request, error) {
+	m := new(Request)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // HelloService_ServiceDesc is the grpc.ServiceDesc for HelloService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -102,6 +166,13 @@ var HelloService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _HelloService_Hello_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "Chat",
+			Handler:       _HelloService_Chat_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "hello.proto",
 }

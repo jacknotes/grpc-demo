@@ -10,6 +10,9 @@ service HelloService {
     // Request rpc函数的参数
     // Response rpc函数的返回参数
     rpc Hello(Request) returns (Response);
+
+    // stream rpc， 双向流
+    rpc Chat(stream Request) returns (stream Response);
 }
 
 message Request {
