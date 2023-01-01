@@ -1,3 +1,5 @@
+//服务端编解码实现
+
 package server
 
 import (

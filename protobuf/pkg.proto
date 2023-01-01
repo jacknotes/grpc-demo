@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package grpc.demo.pkg;
+option go_package="github.com/jacknotes/grpc-demo/protobuf";    // go mod名称加protobuf路径，生成到这里面来
+
+// 导入包grpc.demo.hello，根据执行位置而定
+import "protobuf/hello.proto";
+
+
+message Pkg1 {
+    grpc.demo.hello.Response response = 1;
+}

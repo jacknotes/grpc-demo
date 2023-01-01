@@ -1,8 +1,61 @@
 syntax = "proto3";
 
-package hello;
+package grpc.demo.hello;
 option go_package="github.com/jacknotes/grpc-demo/protobuf";    // go mod名称加protobuf路径，生成到这里面来
 
+
+// 这里是应用其他的proto文件, 后面会讲 ipmort用法
+import "google/protobuf/any.proto";
+
+message Response {
+  int32 code = 1;
+  google.protobuf.Any data = 2;
+}
+
+
 message String {
-    string value = 1;
+    string value = 1;       // 等价于Value string中go变量的写法，probobuf字段默认大写，为全部导出，不可配置为小写
+    optional string key = 2;    // Key string , 为入optional后运行为nil "" null
+    optional bool enabled = 3;  // 默认enabled=false,  添加了optional则默认是nil了，enabled != nil 时才添加过滤条件
+    double metric_value = 4;    // float64，会默认把蛇形转换为大驼峰形
+
+    map<string,int32> values = 5;  //map<string,string> 为key和value的类型
+
+    String1 string1 = 6; // 结构体嵌套
+}
+
+message String1 {
+    reserved 4,6 to 10;     //保留编号，后面不允许使用
+    string value = 1;       // 等价于Value string中go变量的写法，probobuf字段默认大写，为全部导出，不可配置为小写
+    optional string key = 2;    // Key string , 添加了optional则默认是nil了，为入optional后运行为nil "" null
+    optional bool enabled = 3;  // 默认enabled=false,  enabled != nil 时才添加过滤条件
+
+    repeated Option option = 5; // Option的数组
+}
+
+// 定义枚举类型
+enum Option {
+    // 允许别名
+    option allow_alias = true;
+    // 枚举选项, 必须从0编号开始，0编号标识的是枚举的默认值
+    A = 0;      // A后面版本会弃用
+    B = 1;
+    C = 2;
+    D = 0;      // D默认不能定义0编号，但是需要跟A编号一样，则需要开启允许别名
+}
+
+
+message Sub1 {
+    string name = 1;
+}
+
+message Sub2 {
+    string name = 1;
+}
+
+message SampleMessage {
+    oneof test_one_of {
+        Sub1 sub1 = 1;
+        Sub2 sub2 = 2;
+    }
 }

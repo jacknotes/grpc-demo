@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package grpc.demo.protocol;
+option go_package="github.com/jacknotes/grpc-demo/grpc/protocol";    // go mod名称加protobuf路径，生成到这里面来
+
+// grpc 需要定义rpc， 需要安装插件，才能让protobuf生成grpc代码
+// 安装protoc-gen-go-grpc插件 go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+service HelloService {
+    // Hello rpc函数的名称
+    // Request rpc函数的参数
+    // Response rpc函数的返回参数
+    rpc Hello(Request) returns (Response);
+}
+
+message Request {
+    string value = 1;
+}
+
+message Response {
+    string value = 1;
+}

@@ -1,3 +1,5 @@
+//客户端编解码实现
+
 package client
 
 import (
