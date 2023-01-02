@@ -6,6 +6,7 @@ import (
 	"io"
 	"net"
 
+	"github.com/jacknotes/grpc-demo/grpc/auth"
 	"github.com/jacknotes/grpc-demo/grpc/protocol"
 	"google.golang.org/grpc"
 )
@@ -49,7 +50,13 @@ func (s *Service) Chat(stream protocol.HelloService_ChatServer) error {
 
 func main() {
 	// 如何把Service 作为一个rpc暴露出去，提供服务
-	server := grpc.NewServer()
+	// 需要将auth.GrpcAuthUnaryServerInterceptor()传给grpc.UnaryInterceptor()，才能成为一个拦截器
+	server := grpc.NewServer(
+		// 请求响应模式的认证中间件，会走此方法去认证
+		grpc.UnaryInterceptor(auth.GrpcAuthUnaryServerInterceptor()),
+		// stream模式的认证中间件，会走此方法去认证
+		grpc.StreamInterceptor(auth.GrpcAuthStreamServerInterceptor()),
+	)
 
 	// Service生成的代码里面，提供了注册函数，把自己注册到grpc的servr内
 	protocol.RegisterHelloServiceServer(server, new(Service))
