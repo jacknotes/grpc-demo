@@ -41,7 +41,7 @@ func main() {
 		panic(err)
 	}
 
-	// 在客户端我们将恢复原状和接收操作放到两个独立的 Goroutine
+	// 在客户端我们将发送操作和接收操作放到两个独立的 Goroutine
 	// 首先是向服务端发送数据
 	go func() {
 		for {
